@@ -1,635 +1,1411 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LaundryPro — Order Management</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
-<style>
-/* ── Variables ─────────────────────────────────────────────────── */
-:root {
-  --bg:        #0d0f14;
-  --surface:   #151820;
-  --card:      #1c2030;
-  --border:    #262c3e;
-  --accent:    #4f8ef7;
-  --accent2:   #a78bfa;
-  --green:     #34d399;
-  --yellow:    #fbbf24;
-  --red:       #f87171;
-  --text:      #e8eaf0;
-  --muted:     #6b7280;
-  --radius:    14px;
-  --font-head: 'Syne', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LaundryPro — Order Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ── Variables ─────────────────────────────────────────────────── */
+    :root {
+      --bg: #09090b;
+      --surface: rgba(24, 24, 27, 0.65);
+      --card: rgba(39, 39, 42, 0.5);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-hover: rgba(255, 255, 255, 0.2);
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --accent2: #a855f7;
+      --green: #10b981;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --radius: 16px;
+      --font-head: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      --glow: 0 0 20px rgba(99, 102, 241, 0.4);
+    }
 
-/* ── Reset ─────────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 14px;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
+    /* ── Reset ─────────────────────────────────────────────────────── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-/* ── Noise texture overlay ──────────────────────────────────────── */
-body::before {
-  content: '';
-  position: fixed; inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
-  pointer-events: none; z-index: 0; opacity: .4;
-}
+    html {
+      scroll-behavior: smooth;
+    }
 
-/* ── Layout ─────────────────────────────────────────────────────── */
-.app { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 14px;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
 
-/* ── Sidebar ────────────────────────────────────────────────────── */
-.sidebar {
-  width: 240px; flex-shrink: 0;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex; flex-direction: column;
-  padding: 24px 0;
-  position: sticky; top: 0; height: 100vh;
-}
-.logo {
-  display: flex; align-items: center; gap: 10px;
-  padding: 0 20px 28px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 12px;
-}
-.logo-icon {
-  width: 36px; height: 36px; border-radius: 10px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
-}
-.logo h1 { font-family: var(--font-head); font-size: 18px; font-weight: 800; letter-spacing: -.3px; }
-.logo span { color: var(--accent); }
+    body::before {
+      content: '';
+      position: fixed;
+      top: -20%;
+      left: -10%;
+      width: 50vw;
+      height: 50vw;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(9, 9, 11, 0) 70%);
+      border-radius: 50%;
+      z-index: 0;
+      pointer-events: none;
+      animation: float 20s ease-in-out infinite alternate;
+    }
 
-.nav-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 20px; cursor: pointer; border-radius: 0;
-  color: var(--muted); font-size: 13.5px; font-weight: 500;
-  transition: all .2s; position: relative;
-  margin: 1px 8px; border-radius: 8px;
-}
-.nav-item:hover { background: var(--card); color: var(--text); }
-.nav-item.active {
-  background: rgba(79, 142, 247, .12);
-  color: var(--accent);
-}
-.nav-item.active::before {
-  content: '';
-  position: absolute; left: 0; top: 6px; bottom: 6px;
-  width: 3px; background: var(--accent); border-radius: 0 3px 3px 0;
-  left: -8px;
-}
-.nav-icon { font-size: 16px; width: 20px; text-align: center; }
-.badge {
-  margin-left: auto; background: var(--accent);
-  color: #fff; font-size: 10px; font-weight: 700;
-  padding: 2px 6px; border-radius: 20px; min-width: 18px; text-align: center;
-}
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -20%;
+      right: -10%;
+      width: 60vw;
+      height: 60vw;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, rgba(9, 9, 11, 0) 70%);
+      border-radius: 50%;
+      z-index: 0;
+      pointer-events: none;
+      animation: float 25s ease-in-out infinite alternate-reverse;
+    }
 
-.sidebar-footer {
-  margin-top: auto; padding: 16px 20px 0;
-  border-top: 1px solid var(--border);
-  color: var(--muted); font-size: 11.5px; line-height: 1.6;
-}
+    @keyframes float {
+      0% {
+        transform: translate(0, 0);
+      }
 
-/* ── Main Content ───────────────────────────────────────────────── */
-.main {
-  flex: 1; overflow-y: auto;
-  background: var(--bg);
-}
-.topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 32px; border-bottom: 1px solid var(--border);
-  background: rgba(13,15,20,.8); backdrop-filter: blur(10px);
-  position: sticky; top: 0; z-index: 10;
-}
-.topbar h2 { font-family: var(--font-head); font-size: 20px; font-weight: 700; }
-.topbar-actions { display: flex; gap: 10px; }
+      100% {
+        transform: translate(5%, 5%);
+      }
+    }
 
-.page { padding: 28px 32px; display: none; }
-.page.active { display: block; }
+    /* ── Layout ─────────────────────────────────────────────────────── */
+    .app {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+      backdrop-filter: blur(80px);
+      -webkit-backdrop-filter: blur(80px);
+    }
 
-/* ── Buttons ────────────────────────────────────────────────────── */
-.btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 9px 18px; border-radius: 9px; border: none;
-  font-family: var(--font-body); font-size: 13.5px; font-weight: 500;
-  cursor: pointer; transition: all .2s;
-}
-.btn-primary {
-  background: var(--accent); color: #fff;
-}
-.btn-primary:hover { background: #3a7ae8; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(79,142,247,.3); }
-.btn-ghost {
-  background: var(--card); color: var(--text); border: 1px solid var(--border);
-}
-.btn-ghost:hover { background: var(--border); }
-.btn-danger { background: rgba(248,113,113,.15); color: var(--red); border: 1px solid rgba(248,113,113,.2); }
-.btn-danger:hover { background: rgba(248,113,113,.25); }
-.btn-sm { padding: 5px 12px; font-size: 12px; border-radius: 7px; }
+    /* ── Sidebar ────────────────────────────────────────────────────── */
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 24px 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+    }
 
-/* ── Cards ──────────────────────────────────────────────────────── */
-.card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 22px;
-}
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 20px 28px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
 
-/* ── Dashboard Stats ────────────────────────────────────────────── */
-.stats-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;
-}
-.stat-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 20px 22px;
-  position: relative; overflow: hidden;
-}
-.stat-card::after {
-  content: attr(data-icon);
-  position: absolute; right: 16px; top: 50%;
-  transform: translateY(-50%);
-  font-size: 36px; opacity: .08;
-}
-.stat-label { color: var(--muted); font-size: 12px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 8px; }
-.stat-value { font-family: var(--font-head); font-size: 28px; font-weight: 700; }
-.stat-sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
-.stat-up { color: var(--green); }
-.stat-card.blue  { border-top: 2px solid var(--accent); }
-.stat-card.green { border-top: 2px solid var(--green); }
-.stat-card.purple{ border-top: 2px solid var(--accent2); }
-.stat-card.yellow{ border-top: 2px solid var(--yellow); }
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
 
-/* ── Status Pills ───────────────────────────────────────────────── */
-.status-bar {
-  display: flex; gap: 12px; margin-bottom: 24px;
-}
-.status-pill {
-  flex: 1; background: var(--card); border: 1px solid var(--border);
-  border-radius: 10px; padding: 14px 16px; text-align: center;
-}
-.status-pill .s-count { font-family: var(--font-head); font-size: 22px; font-weight: 700; }
-.status-pill .s-label { font-size: 11px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: .05em; }
-.s-RECEIVED  .s-count { color: var(--yellow); }
-.s-PROCESSING .s-count { color: var(--accent); }
-.s-READY     .s-count { color: var(--accent2); }
-.s-DELIVERED .s-count { color: var(--green); }
+    .logo h1 {
+      font-family: var(--font-head);
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -.3px;
+    }
 
-/* ── Dashboard two-col ──────────────────────────────────────────── */
-.dash-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .logo span {
+      color: var(--accent);
+    }
 
-/* ── Tables ─────────────────────────────────────────────────────── */
-.table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
-table { width: 100%; border-collapse: collapse; }
-thead { background: var(--surface); }
-th { padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
-td { padding: 13px 16px; border-top: 1px solid var(--border); font-size: 13.5px; vertical-align: middle; }
-tr:hover td { background: rgba(255,255,255,.02); }
-.order-id { font-family: monospace; font-size: 12px; color: var(--accent); }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 0;
+      color: var(--muted);
+      font-size: 13.5px;
+      font-weight: 500;
+      transition: all .2s;
+      position: relative;
+      margin: 1px 8px;
+      border-radius: 8px;
+    }
 
-/* ── Status badge ───────────────────────────────────────────────── */
-.sbadge {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 600;
-}
-.sbadge::before { content: '●'; font-size: 8px; }
-.sbadge-RECEIVED   { background: rgba(251,191,36,.12);  color: var(--yellow); }
-.sbadge-PROCESSING { background: rgba(79,142,247,.12);  color: var(--accent); }
-.sbadge-READY      { background: rgba(167,139,250,.12); color: var(--accent2); }
-.sbadge-DELIVERED  { background: rgba(52,211,153,.12);  color: var(--green); }
+    .nav-item:hover {
+      background: var(--card);
+      color: var(--text);
+    }
 
-/* ── Forms ──────────────────────────────────────────────────────── */
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-group.full { grid-column: 1 / -1; }
-label { font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
-input, select, textarea {
-  background: var(--surface); border: 1px solid var(--border);
-  color: var(--text); font-family: var(--font-body); font-size: 13.5px;
-  padding: 10px 14px; border-radius: 9px; outline: none;
-  transition: border-color .2s;
-}
-input:focus, select:focus, textarea:focus { border-color: var(--accent); }
-input::placeholder { color: var(--muted); }
-select option { background: var(--surface); }
+    .nav-item.active {
+      background: rgba(79, 142, 247, .12);
+      color: var(--accent);
+    }
 
-/* ── Garment Builder ────────────────────────────────────────────── */
-.garment-row {
-  display: grid; grid-template-columns: 1fr 80px 110px auto;
-  gap: 10px; align-items: center; margin-bottom: 10px;
-}
-.add-garment-btn {
-  display: flex; align-items: center; gap: 6px;
-  color: var(--accent); font-size: 13px; cursor: pointer;
-  background: none; border: 1px dashed var(--border);
-  width: 100%; padding: 9px; border-radius: 9px; justify-content: center;
-  transition: all .2s;
-}
-.add-garment-btn:hover { border-color: var(--accent); background: rgba(79,142,247,.05); }
-.remove-btn {
-  background: none; border: none; color: var(--muted);
-  cursor: pointer; font-size: 16px; padding: 4px; border-radius: 6px;
-  transition: color .2s;
-}
-.remove-btn:hover { color: var(--red); }
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 6px;
+      bottom: 6px;
+      width: 3px;
+      background: var(--accent);
+      border-radius: 0 3px 3px 0;
+      left: -8px;
+    }
 
-/* ── Order Detail Modal ─────────────────────────────────────────── */
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(4px);
-  z-index: 100; display: none; align-items: center; justify-content: center;
-}
-.modal-overlay.open { display: flex; }
-.modal {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 18px; width: 600px; max-width: 95vw;
-  max-height: 85vh; overflow-y: auto;
-  padding: 28px; animation: slideUp .25s ease;
-}
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px) scale(.97); }
-  to   { opacity: 1; transform: none; }
-}
-.modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 22px; }
-.modal-header h3 { font-family: var(--font-head); font-size: 18px; font-weight: 700; }
-.close-btn { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; }
-.close-btn:hover { color: var(--text); }
+    .nav-icon {
+      font-size: 16px;
+      width: 20px;
+      text-align: center;
+    }
 
-/* ── Timeline ───────────────────────────────────────────────────── */
-.timeline { margin-top: 16px; }
-.tl-step {
-  display: flex; gap: 12px; position: relative;
-  padding-bottom: 16px;
-}
-.tl-step:last-child { padding-bottom: 0; }
-.tl-step::before {
-  content: ''; position: absolute; left: 13px; top: 24px;
-  width: 2px; bottom: 0; background: var(--border);
-}
-.tl-step:last-child::before { display: none; }
-.tl-dot {
-  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700; z-index: 1;
-}
-.tl-dot.done { background: rgba(52,211,153,.2); color: var(--green); border: 2px solid var(--green); }
-.tl-dot.current { background: rgba(79,142,247,.2); color: var(--accent); border: 2px solid var(--accent); }
-.tl-dot.pending { background: var(--border); color: var(--muted); border: 2px solid var(--border); }
-.tl-info { flex: 1; }
-.tl-status { font-weight: 600; font-size: 13px; }
-.tl-time { color: var(--muted); font-size: 12px; }
+    .badge {
+      margin-left: auto;
+      background: var(--accent);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 20px;
+      min-width: 18px;
+      text-align: center;
+    }
 
-/* ── Search & Filter Bar ────────────────────────────────────────── */
-.filter-bar {
-  display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; align-items: center;
-}
-.filter-bar input, .filter-bar select {
-  flex: 1; min-width: 140px; max-width: 220px;
-}
-.search-wrap { position: relative; flex: 1; min-width: 200px; }
-.search-wrap input { width: 100%; padding-left: 36px; }
-.search-wrap::before { content: '🔍'; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; }
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px 20px 0;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11.5px;
+      line-height: 1.6;
+    }
 
-/* ── Popular Garments ───────────────────────────────────────────── */
-.garment-list { display: flex; flex-direction: column; gap: 10px; }
-.garment-item { display: flex; align-items: center; gap: 10px; }
-.g-name { flex: 1; font-size: 13.5px; }
-.g-bar-wrap { flex: 2; background: var(--border); border-radius: 20px; height: 6px; overflow: hidden; }
-.g-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 20px; transition: width .8s ease; }
-.g-count { color: var(--muted); font-size: 12px; min-width: 30px; text-align: right; }
+    /* ── Main Content ───────────────────────────────────────────────── */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      background: var(--bg);
+    }
 
-/* ── Toast ──────────────────────────────────────────────────────── */
-.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
-.toast {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 10px; padding: 12px 18px; font-size: 13.5px;
-  box-shadow: 0 8px 32px rgba(0,0,0,.4);
-  animation: toastIn .3s ease; min-width: 240px;
-  display: flex; align-items: center; gap: 8px;
-}
-.toast.success { border-left: 3px solid var(--green); }
-.toast.error   { border-left: 3px solid var(--red); }
-.toast.info    { border-left: 3px solid var(--accent); }
-@keyframes toastIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: none; } }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 32px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    }
 
-/* ── Loading Spinner ────────────────────────────────────────────── */
-.loader {
-  width: 18px; height: 18px; border: 2px solid var(--border);
-  border-top-color: var(--accent); border-radius: 50%;
-  animation: spin .7s linear infinite; display: inline-block;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+    .topbar h2 {
+      font-family: var(--font-head);
+      font-size: 20px;
+      font-weight: 700;
+    }
 
-/* ── Empty State ────────────────────────────────────────────────── */
-.empty { text-align: center; padding: 60px 20px; color: var(--muted); }
-.empty .e-icon { font-size: 48px; margin-bottom: 12px; opacity: .5; }
-.empty p { font-size: 15px; margin-bottom: 16px; }
+    .topbar-actions {
+      display: flex;
+      gap: 10px;
+    }
 
-/* ── Bill Preview ───────────────────────────────────────────────── */
-.bill-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; }
-.bill-total { display: flex; justify-content: space-between; padding: 12px 0 0; font-weight: 700; font-size: 16px; }
-.bill-section { background: var(--surface); border-radius: 10px; padding: 16px; margin-top: 12px; }
+    .page {
+      padding: 28px 32px;
+      display: none;
+    }
 
-/* ── Section header ─────────────────────────────────────────────── */
-.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-.section-header h3 { font-family: var(--font-head); font-size: 16px; font-weight: 700; }
+    .page.active {
+      display: block;
+    }
 
-/* ── Responsive ─────────────────────────────────────────────────── */
-@media (max-width: 900px) {
-  .stats-grid { grid-template-columns: 1fr 1fr; }
-  .dash-row { grid-template-columns: 1fr; }
-  .sidebar { width: 200px; }
-}
-@media (max-width: 640px) {
-  .sidebar { display: none; }
-  .stats-grid { grid-template-columns: 1fr; }
-  .page { padding: 16px; }
-  .topbar { padding: 16px; }
-}
+    /* ── Buttons ────────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      border-radius: 9px;
+      border: none;
+      font-family: var(--font-body);
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-/* ── Animations ─────────────────────────────────────────────────── */
-.fade-in { animation: fadeIn .4s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
 
-.action-bar { display: flex; gap: 6px; }
-.divider { height: 1px; background: var(--border); margin: 20px 0; }
-.info-row { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 16px; }
-.info-item label { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
-.info-item span { font-size: 14px; font-weight: 500; }
-</style>
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--glow);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--border-hover);
+    }
+
+    .btn-danger {
+      background: rgba(248, 113, 113, .15);
+      color: var(--red);
+      border: 1px solid rgba(248, 113, 113, .2);
+    }
+
+    .btn-danger:hover {
+      background: rgba(248, 113, 113, .25);
+    }
+
+    .btn-sm {
+      padding: 5px 12px;
+      font-size: 12px;
+      border-radius: 7px;
+    }
+
+    /* ── Cards ──────────────────────────────────────────────────────── */
+    .card,
+    .stat-card,
+    .status-pill,
+    .modal,
+    .toast {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: var(--shadow);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    /* ── Dashboard Stats ────────────────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::after {
+      content: attr(data-icon);
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 36px;
+      opacity: .08;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-family: var(--font-head);
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .stat-sub {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .stat-up {
+      color: var(--green);
+    }
+
+    .stat-card.blue {
+      border-top: 2px solid var(--accent);
+    }
+
+    .stat-card.green {
+      border-top: 2px solid var(--green);
+    }
+
+    .stat-card.purple {
+      border-top: 2px solid var(--accent2);
+    }
+
+    .stat-card.yellow {
+      border-top: 2px solid var(--yellow);
+    }
+
+    /* ── Status Pills ───────────────────────────────────────────────── */
+    .status-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .status-pill {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      text-align: center;
+    }
+
+    .status-pill .s-count {
+      font-family: var(--font-head);
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .status-pill .s-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .s-RECEIVED .s-count {
+      color: var(--yellow);
+    }
+
+    .s-PROCESSING .s-count {
+      color: var(--accent);
+    }
+
+    .s-READY .s-count {
+      color: var(--accent2);
+    }
+
+    .s-DELIVERED .s-count {
+      color: var(--green);
+    }
+
+    /* ── Dashboard two-col ──────────────────────────────────────────── */
+    .dash-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    /* ── Tables ─────────────────────────────────────────────────────── */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: var(--surface);
+    }
+
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 13px 16px;
+      border-top: 1px solid var(--border);
+      font-size: 13.5px;
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, .02);
+    }
+
+    .order-id {
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--accent);
+    }
+
+    /* ── Status badge ───────────────────────────────────────────────── */
+    .sbadge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+
+    .sbadge::before {
+      content: '●';
+      font-size: 8px;
+    }
+
+    .sbadge-RECEIVED {
+      background: rgba(251, 191, 36, .12);
+      color: var(--yellow);
+    }
+
+    .sbadge-PROCESSING {
+      background: rgba(79, 142, 247, .12);
+      color: var(--accent);
+    }
+
+    .sbadge-READY {
+      background: rgba(167, 139, 250, .12);
+      color: var(--accent2);
+    }
+
+    .sbadge-DELIVERED {
+      background: rgba(52, 211, 153, .12);
+      color: var(--green);
+    }
+
+    /* ── Forms ──────────────────────────────────────────────────────── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    input,
+    select,
+    textarea {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 13.5px;
+      padding: 10px 14px;
+      border-radius: 9px;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--accent);
+    }
+
+    input::placeholder {
+      color: var(--muted);
+    }
+
+    select option {
+      background: var(--surface);
+    }
+
+    /* ── Garment Builder ────────────────────────────────────────────── */
+    .garment-row {
+      display: grid;
+      grid-template-columns: 1fr 80px 110px auto;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .add-garment-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent);
+      font-size: 13px;
+      cursor: pointer;
+      background: none;
+      border: 1px dashed var(--border);
+      width: 100%;
+      padding: 9px;
+      border-radius: 9px;
+      justify-content: center;
+      transition: all .2s;
+    }
+
+    .add-garment-btn:hover {
+      border-color: var(--accent);
+      background: rgba(79, 142, 247, .05);
+    }
+
+    .remove-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px;
+      border-radius: 6px;
+      transition: color .2s;
+    }
+
+    .remove-btn:hover {
+      color: var(--red);
+    }
+
+    /* ── Order Detail Modal ─────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .7);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      width: 600px;
+      max-width: 95vw;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 28px;
+      animation: slideUp .25s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(.97);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 22px;
+    }
+
+    .modal-header h3 {
+      font-family: var(--font-head);
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .close-btn:hover {
+      color: var(--text);
+    }
+
+    /* ── Timeline ───────────────────────────────────────────────────── */
+    .timeline {
+      margin-top: 16px;
+    }
+
+    .tl-step {
+      display: flex;
+      gap: 12px;
+      position: relative;
+      padding-bottom: 16px;
+    }
+
+    .tl-step:last-child {
+      padding-bottom: 0;
+    }
+
+    .tl-step::before {
+      content: '';
+      position: absolute;
+      left: 13px;
+      top: 24px;
+      width: 2px;
+      bottom: 0;
+      background: var(--border);
+    }
+
+    .tl-step:last-child::before {
+      display: none;
+    }
+
+    .tl-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      z-index: 1;
+    }
+
+    .tl-dot.done {
+      background: rgba(52, 211, 153, .2);
+      color: var(--green);
+      border: 2px solid var(--green);
+    }
+
+    .tl-dot.current {
+      background: rgba(79, 142, 247, .2);
+      color: var(--accent);
+      border: 2px solid var(--accent);
+    }
+
+    .tl-dot.pending {
+      background: var(--border);
+      color: var(--muted);
+      border: 2px solid var(--border);
+    }
+
+    .tl-info {
+      flex: 1;
+    }
+
+    .tl-status {
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .tl-time {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* ── Search & Filter Bar ────────────────────────────────────────── */
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-bar input,
+    .filter-bar select {
+      flex: 1;
+      min-width: 140px;
+      max-width: 220px;
+    }
+
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      padding-left: 36px;
+    }
+
+    .search-wrap::before {
+      content: '🔍';
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+    }
+
+    /* ── Popular Garments ───────────────────────────────────────────── */
+    .garment-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .garment-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .g-name {
+      flex: 1;
+      font-size: 13.5px;
+    }
+
+    .g-bar-wrap {
+      flex: 2;
+      background: var(--border);
+      border-radius: 20px;
+      height: 6px;
+      overflow: hidden;
+    }
+
+    .g-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 20px;
+      transition: width .8s ease;
+    }
+
+    .g-count {
+      color: var(--muted);
+      font-size: 12px;
+      min-width: 30px;
+      text-align: right;
+    }
+
+    /* ── Toast ──────────────────────────────────────────────────────── */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 13.5px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, .4);
+      animation: toastIn .3s ease;
+      min-width: 240px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast.success {
+      border-left: 3px solid var(--green);
+    }
+
+    .toast.error {
+      border-left: 3px solid var(--red);
+    }
+
+    .toast.info {
+      border-left: 3px solid var(--accent);
+    }
+
+    @keyframes toastIn {
+      from {
+        opacity: 0;
+        transform: translateX(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* ── Loading Spinner ────────────────────────────────────────────── */
+    .loader {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ── Empty State ────────────────────────────────────────────────── */
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .empty .e-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      opacity: .5;
+    }
+
+    .empty p {
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+
+    /* ── Bill Preview ───────────────────────────────────────────────── */
+    .bill-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13.5px;
+    }
+
+    .bill-total {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0 0;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .bill-section {
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+
+    /* ── Section header ─────────────────────────────────────────────── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .section-header h3 {
+      font-family: var(--font-head);
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    /* ── Responsive ─────────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .dash-row {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        width: 200px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .sidebar {
+        display: none;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .page {
+        padding: 16px;
+      }
+
+      .topbar {
+        padding: 16px;
+      }
+    }
+
+    /* ── Animations ─────────────────────────────────────────────────── */
+    .fade-in {
+      animation: fadeIn .4s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .action-bar {
+      display: flex;
+      gap: 6px;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 20px 0;
+    }
+
+    .info-row {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .info-item label {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 3px;
+    }
+
+    .info-item span {
+      font-size: 14px;
+      font-weight: 500;
+    }
+  </style>
+
+  <style>
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+
+      .modal.open,
+      .modal.open * {
+        visibility: visible;
+      }
+
+      .modal.open {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+      }
+
+      .close-btn,
+      .print-btn,
+      .action-bar,
+      .timeline {
+        display: none !important;
+      }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
-<div class="app">
+  <div class="app">
 
-  <!-- ── Sidebar ── -->
-  <aside class="sidebar">
-    <div class="logo">
-      <div class="logo-icon">🧺</div>
-      <h1>Laundry<span>Pro</span></h1>
-    </div>
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-icon">🧺</div>
+        <h1>Laundry<span>Pro</span></h1>
+      </div>
 
-    <nav>
-      <div class="nav-item active" onclick="showPage('dashboard')">
-        <span class="nav-icon">📊</span> Dashboard
-      </div>
-      <div class="nav-item" onclick="showPage('orders')">
-        <span class="nav-icon">📋</span> All Orders
-        <span class="badge" id="total-badge">0</span>
-      </div>
-      <div class="nav-item" onclick="showPage('create')">
-        <span class="nav-icon">➕</span> New Order
-      </div>
-      <div class="nav-item" onclick="showPage('prices')">
-        <span class="nav-icon">💰</span> Price List
-      </div>
-    </nav>
-
-    <div class="sidebar-footer">
-      LaundryPro v1.0<br>
-      © 2025 — All rights reserved
-    </div>
-  </aside>
-
-  <!-- ── Main ── -->
-  <main class="main">
-    <header class="topbar">
-      <h2 id="page-title">Dashboard</h2>
-      <div class="topbar-actions">
-        <button class="btn btn-ghost btn-sm" onclick="refreshAll()">🔄 Refresh</button>
-        <button class="btn btn-primary btn-sm" onclick="showPage('create')">+ New Order</button>
-      </div>
-    </header>
-
-    <!-- ── Dashboard ── -->
-    <section class="page active fade-in" id="page-dashboard">
-      <div class="stats-grid">
-        <div class="stat-card blue" data-icon="📦">
-          <div class="stat-label">Total Orders</div>
-          <div class="stat-value" id="d-total">—</div>
-          <div class="stat-sub">Today: <span id="d-today-orders" class="stat-up">—</span></div>
+      <nav>
+        <div class="nav-item active" onclick="showPage('dashboard')">
+          <span class="nav-icon">📊</span> Dashboard
         </div>
-        <div class="stat-card green" data-icon="💵">
-          <div class="stat-label">Total Revenue</div>
-          <div class="stat-value" id="d-revenue">—</div>
-          <div class="stat-sub">Today: <span id="d-today-rev" class="stat-up">—</span></div>
+        <div class="nav-item" onclick="showPage('orders')">
+          <span class="nav-icon">📋</span> All Orders
+          <span class="badge" id="total-badge">0</span>
         </div>
-        <div class="stat-card yellow" data-icon="⏳">
-          <div class="stat-label">Pending Revenue</div>
-          <div class="stat-value" id="d-pending">—</div>
-          <div class="stat-sub">Not yet delivered</div>
+        <div class="nav-item" onclick="showPage('create')">
+          <span class="nav-icon">➕</span> New Order
         </div>
-        <div class="stat-card purple" data-icon="✅">
-          <div class="stat-label">Delivered Revenue</div>
-          <div class="stat-value" id="d-delivered">—</div>
-          <div class="stat-sub">Collected</div>
+        <div class="nav-item" onclick="showPage('prices')">
+          <span class="nav-icon">💰</span> Price List
         </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        LaundryPro <br>
+
       </div>
+    </aside>
 
-      <div class="status-bar" id="status-bar"></div>
+    <!-- ── Main ── -->
+    <main class="main">
+      <header class="topbar">
+        <h2 id="page-title">Dashboard</h2>
+        <div class="topbar-actions">
+          <button class="btn btn-ghost btn-sm" onclick="refreshAll()">🔄 Refresh</button>
+          <button class="btn btn-primary btn-sm" onclick="showPage('create')">+ New Order</button>
+        </div>
+      </header>
 
-      <div class="dash-row">
-        <div class="card">
-          <div class="section-header">
-            <h3>🔥 Popular Garments</h3>
+      <!-- ── Dashboard ── -->
+      <section class="page active fade-in" id="page-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card blue" data-icon="📦">
+            <div class="stat-label">Total Orders</div>
+            <div class="stat-value" id="d-total">—</div>
+            <div class="stat-sub">Today: <span id="d-today-orders" class="stat-up">—</span></div>
           </div>
-          <div class="garment-list" id="popular-garments">
+          <div class="stat-card green" data-icon="💵">
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-value" id="d-revenue">—</div>
+            <div class="stat-sub">Today: <span id="d-today-rev" class="stat-up">—</span></div>
+          </div>
+          <div class="stat-card yellow" data-icon="⏳">
+            <div class="stat-label">Pending Revenue</div>
+            <div class="stat-value" id="d-pending">—</div>
+            <div class="stat-sub">Not yet delivered</div>
+          </div>
+          <div class="stat-card purple" data-icon="✅">
+            <div class="stat-label">Delivered Revenue</div>
+            <div class="stat-value" id="d-delivered">—</div>
+            <div class="stat-sub">Collected</div>
+          </div>
+        </div>
+
+        <div class="status-bar" id="status-bar"></div>
+
+        <div class="card" style="margin-bottom: 20px;">
+          <div class="section-header">
+            <h3>📈 Revenue Trend (Last 7 Days)</h3>
+          </div>
+          <canvas id="revenueChart" height="60"></canvas>
+        </div>
+
+        <div class="dash-row">
+          <div class="card">
+            <div class="section-header">
+              <h3>🔥 Popular Garments</h3>
+            </div>
+            <div class="garment-list" id="popular-garments">
+              <div class="loader"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="section-header">
+              <h3>🕐 Recent Orders</h3>
+              <button class="btn btn-ghost btn-sm" onclick="showPage('orders')">View All →</button>
+            </div>
+            <div id="recent-orders">
+              <div class="loader"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── All Orders ── -->
+      <section class="page fade-in" id="page-orders">
+        <div class="filter-bar">
+          <div class="search-wrap">
+            <input type="text" id="filter-name" placeholder="Search by name..." oninput="loadOrders()">
+          </div>
+          <input type="text" id="filter-phone" placeholder="Phone..." style="max-width:160px" oninput="loadOrders()">
+          <input type="text" id="filter-garment" placeholder="Garment type..." style="max-width:160px"
+            oninput="loadOrders()">
+          <select id="filter-status" onchange="loadOrders()">
+            <option value="">All Statuses</option>
+            <option>RECEIVED</option>
+            <option>PROCESSING</option>
+            <option>READY</option>
+            <option>DELIVERED</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="clearFilters()">✕ Clear</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportCSV()">📥 Export CSV</button>
+        </div>
+
+        <div style="margin-bottom:15px; display:flex; gap:10px; align-items:center;">
+          <select id="bulk-status" style="max-width:160px">
+            <option value="">-- Bulk Update --</option>
+            <option>RECEIVED</option>
+            <option>PROCESSING</option>
+            <option>READY</option>
+            <option>DELIVERED</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="applyBulkUpdate()">Apply</button>
+        </div>
+
+        <div class="table-wrap" id="orders-table-wrap">
+          <div style="padding:40px;text-align:center">
             <div class="loader"></div>
           </div>
         </div>
-        <div class="card">
-          <div class="section-header">
-            <h3>🕐 Recent Orders</h3>
-            <button class="btn btn-ghost btn-sm" onclick="showPage('orders')">View All →</button>
-          </div>
-          <div id="recent-orders"><div class="loader"></div></div>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- ── All Orders ── -->
-    <section class="page fade-in" id="page-orders">
-      <div class="filter-bar">
-        <div class="search-wrap">
-          <input type="text" id="filter-name" placeholder="Search by name..." oninput="loadOrders()">
-        </div>
-        <input type="text" id="filter-phone" placeholder="Phone..." style="max-width:160px" oninput="loadOrders()">
-        <input type="text" id="filter-garment" placeholder="Garment type..." style="max-width:160px" oninput="loadOrders()">
-        <select id="filter-status" onchange="loadOrders()">
-          <option value="">All Statuses</option>
-          <option>RECEIVED</option>
-          <option>PROCESSING</option>
-          <option>READY</option>
-          <option>DELIVERED</option>
-        </select>
-        <button class="btn btn-ghost btn-sm" onclick="clearFilters()">✕ Clear</button>
-      </div>
-
-      <div class="table-wrap" id="orders-table-wrap">
-        <div style="padding:40px;text-align:center"><div class="loader"></div></div>
-      </div>
-    </section>
-
-    <!-- ── Create Order ── -->
-    <section class="page fade-in" id="page-create">
-      <div style="max-width:700px">
-        <div class="card">
-          <div class="section-header"><h3>👤 Customer Details</h3></div>
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Customer Name *</label>
-              <input id="c-name" type="text" placeholder="e.g. Rahul Sharma">
+      <!-- ── Price List & POS ── -->
+      <section class="page fade-in" id="page-prices">
+        <div style="display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap;">
+          <div class="card" style="flex:1; min-width:300px;">
+            <div class="section-header" style="margin-bottom: 24px;">
+              <h3>🛍️ Garment Catalog</h3>
+              <span style="color:var(--muted);font-size:13px;display:block;margin-top:6px;">Select items to add them to
+                the current bill.</span>
             </div>
-            <div class="form-group">
-              <label>Phone Number *</label>
-              <input id="c-phone" type="tel" placeholder="e.g. 9876543210">
-            </div>
-            <div class="form-group full">
-              <label>Notes (optional)</label>
-              <input id="c-notes" type="text" placeholder="e.g. Handle with care, stain on collar...">
+            <div id="price-list">
+              <div class="loader"></div>
             </div>
           </div>
-        </div>
 
-        <div class="card" style="margin-top:16px">
-          <div class="section-header">
-            <h3>👕 Garments</h3>
-            <span style="color:var(--muted);font-size:12px">Prices auto-filled from catalog</span>
-          </div>
-          <div id="garment-rows"></div>
-          <button class="add-garment-btn" onclick="addGarmentRow()">+ Add Garment</button>
-
-          <div class="divider"></div>
-          <div class="bill-section" id="bill-preview" style="display:none">
-            <div class="section-header" style="margin-bottom:10px"><h3>🧾 Bill Preview</h3></div>
-            <div id="bill-lines"></div>
-            <div class="bill-total">
+          <div class="card" style="width:340px; position:sticky; top:100px; flex-shrink:0;">
+            <div class="section-header" style="margin-bottom: 16px;">
+              <h3>🧾 Current Bill</h3>
+            </div>
+            <div id="pos-cart-items"
+              style="min-height: 150px; max-height: 400px; overflow-y:auto; margin-bottom:16px; padding-right:8px;">
+              <div class="empty">
+                <p style="color:var(--muted)">No items added yet</p>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="bill-total"
+              style="font-size: 18px; margin-bottom: 16px; display:flex; justify-content:space-between; font-weight:700;">
               <span>Total Amount</span>
-              <span id="bill-total-val" style="color:var(--green)">₹0</span>
+              <span id="pos-total-val" style="color:var(--green)">₹0</span>
             </div>
+            <button class="btn btn-primary" style="width:100%; justify-content:center; padding:12px; font-size:15px;"
+              onclick="checkoutPos()">
+              Proceed to Checkout →
+            </button>
           </div>
         </div>
+      </section>
 
-        <div style="margin-top:16px;display:flex;gap:10px">
-          <button class="btn btn-primary" style="flex:1" onclick="submitOrder()" id="submit-btn">
-            ✓ Create Order
-          </button>
-          <button class="btn btn-ghost" onclick="resetForm()">Reset</button>
+      <!-- ── Create Order ── -->
+      <section class="page fade-in" id="page-create">
+        <div style="max-width:700px">
+          <div class="card">
+            <div class="section-header">
+              <h3>👤 Customer Details</h3>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Customer Name *</label>
+                <input id="c-name" type="text" placeholder="e.g. Rahul Sharma">
+              </div>
+              <div class="form-group">
+                <label>Phone Number *</label>
+                <input id="c-phone" type="tel" placeholder="e.g. 9876543210">
+              </div>
+              <div class="form-group full">
+                <label>Notes (optional)</label>
+                <input id="c-notes" type="text" placeholder="e.g. Handle with care, stain on collar...">
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:16px">
+            <div class="section-header">
+              <h3>👕 Garments</h3>
+              <span style="color:var(--muted);font-size:12px">Prices auto-filled from catalog</span>
+            </div>
+            <div id="garment-rows"></div>
+            <button class="add-garment-btn" onclick="addGarmentRow()">+ Add Garment</button>
+
+            <div class="divider"></div>
+            <div class="bill-section" id="bill-preview" style="display:none">
+              <div class="section-header" style="margin-bottom:10px">
+                <h3>🧾 Bill Preview</h3>
+              </div>
+              <div id="bill-lines"></div>
+              <div class="bill-total">
+                <span>Total Amount</span>
+                <span id="bill-total-val" style="color:var(--green)">₹0</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px;display:flex;gap:10px">
+            <button class="btn btn-primary" style="flex:1" onclick="submitOrder()" id="submit-btn">
+              ✓ Create Order
+            </button>
+            <button class="btn btn-ghost" onclick="resetForm()">Reset</button>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- ── Price List ── -->
-    <section class="page fade-in" id="page-prices">
-      <div class="card" style="max-width:500px">
-        <div class="section-header"><h3>💰 Garment Price Catalog</h3></div>
-        <div id="price-list"><div class="loader"></div></div>
-      </div>
-    </section>
-
-  </main>
-</div>
-
-<!-- ── Order Detail Modal ── -->
-<div class="modal-overlay" id="modal" onclick="closeModal(event)">
-  <div class="modal" id="modal-content">
-    <div id="modal-body"></div>
+    </main>
   </div>
-</div>
 
-<!-- ── Toast Container ── -->
-<div class="toast-container" id="toasts"></div>
+  <!-- ── Order Detail Modal ── -->
+  <div class="modal-overlay" id="modal" onclick="closeModal(event)">
+    <div class="modal" id="modal-content">
+      <div id="modal-body"></div>
+    </div>
+  </div>
 
-<script>
-const API = '';  // same origin
+  <!-- ── Toast Container ── -->
+  <div class="toast-container" id="toasts"></div>
 
-// ── Navigation ──────────────────────────────────────────────────────────────
-const PAGE_TITLES = { dashboard: 'Dashboard', orders: 'All Orders', create: 'New Order', prices: 'Price Catalog' };
+  <script>
+    const API = '';  // same origin
 
-function showPage(p) {
-  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  document.getElementById('page-' + p).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(el => {
-    if (el.textContent.toLowerCase().includes(PAGE_TITLES[p].split(' ')[0].toLowerCase())) el.classList.add('active');
-  });
-  document.getElementById('page-title').textContent = PAGE_TITLES[p];
-  if (p === 'dashboard') loadDashboard();
-  if (p === 'orders') loadOrders();
-  if (p === 'prices') loadPrices();
-  if (p === 'create') initCreatePage();
-}
+    // ── Navigation ──────────────────────────────────────────────────────────────
+    const PAGE_TITLES = { dashboard: 'Dashboard', orders: 'All Orders', create: 'New Order', prices: 'Price Catalog' };
 
-// ── Toast ────────────────────────────────────────────────────────────────────
-function toast(msg, type = 'info') {
-  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  el.innerHTML = `<span>${icons[type]}</span> ${msg}`;
-  document.getElementById('toasts').appendChild(el);
-  setTimeout(() => el.remove(), 3500);
-}
+    function showPage(p) {
+      document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('page-' + p).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(el => {
+        if (el.textContent.toLowerCase().includes(PAGE_TITLES[p].split(' ')[0].toLowerCase())) el.classList.add('active');
+      });
+      document.getElementById('page-title').textContent = PAGE_TITLES[p];
+      if (p === 'dashboard') loadDashboard();
+      if (p === 'orders') loadOrders();
+      if (p === 'prices') loadPrices();
+      if (p === 'create') initCreatePage();
+    }
 
-// ── API Helper ───────────────────────────────────────────────────────────────
-async function api(path, method = 'GET', body = null) {
-  const opts = { method, headers: { 'Content-Type': 'application/json' } };
-  if (body) opts.body = JSON.stringify(body);
-  const res = await fetch(API + path, opts);
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.detail || 'API Error');
-  return data;
-}
+    // ── Toast ────────────────────────────────────────────────────────────────────
+    function toast(msg, type = 'info') {
+      const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      el.innerHTML = `<span>${icons[type]}</span> ${msg}`;
+      document.getElementById('toasts').appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }
 
-// ── Formatters ───────────────────────────────────────────────────────────────
-function fmt(n) { return '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 0 }); }
-function fmtDate(s) { if (!s) return '—'; return new Date(s).toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }); }
-function fmtDateShort(s) { if (!s) return '—'; const d = new Date(s); return d.toLocaleDateString('en-IN', { day:'2-digit', month:'short' }) + ' ' + d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' }); }
+    // ── API Helper ───────────────────────────────────────────────────────────────
+    async function api(path, method = 'GET', body = null) {
+      const opts = { method, headers: { 'Content-Type': 'application/json' } };
+      if (body) opts.body = JSON.stringify(body);
+      const res = await fetch(API + path, opts);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'API Error');
+      return data;
+    }
 
-// ── Dashboard ────────────────────────────────────────────────────────────────
-async function loadDashboard() {
-  try {
-    const d = await api('/api/dashboard');
+    // ── Formatters ───────────────────────────────────────────────────────────────
+    function fmt(n) { return '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 0 }); }
+    function fmtDate(s) { if (!s) return '—'; return new Date(s).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+    function fmtDateShort(s) { if (!s) return '—'; const d = new Date(s); return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) + ' ' + d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }); }
 
-    document.getElementById('d-total').textContent = d.total_orders;
-    document.getElementById('d-revenue').textContent = fmt(d.total_revenue);
-    document.getElementById('d-pending').textContent = fmt(d.pending_revenue);
-    document.getElementById('d-delivered').textContent = fmt(d.delivered_revenue);
-    document.getElementById('d-today-orders').textContent = d.today.orders + ' orders';
-    document.getElementById('d-today-rev').textContent = fmt(d.today.revenue);
-    document.getElementById('total-badge').textContent = d.total_orders;
+    // ── Dashboard ────────────────────────────────────────────────────────────────
+    async function loadDashboard() {
+      try {
+        const d = await api('/api/dashboard');
 
-    // Status bar
-    const statuses = ['RECEIVED','PROCESSING','READY','DELIVERED'];
-    const sicons = { RECEIVED:'📥', PROCESSING:'🔄', READY:'✅', DELIVERED:'🚚' };
-    document.getElementById('status-bar').innerHTML = statuses.map(s => `
+        document.getElementById('d-total').textContent = d.total_orders;
+        document.getElementById('d-revenue').textContent = fmt(d.total_revenue);
+        document.getElementById('d-pending').textContent = fmt(d.pending_revenue);
+        document.getElementById('d-delivered').textContent = fmt(d.delivered_revenue);
+        document.getElementById('d-today-orders').textContent = d.today.orders + ' orders';
+        document.getElementById('d-today-rev').textContent = fmt(d.today.revenue);
+        document.getElementById('total-badge').textContent = d.total_orders;
+
+        // Status bar
+        const statuses = ['RECEIVED', 'PROCESSING', 'READY', 'DELIVERED'];
+        const sicons = { RECEIVED: '📥', PROCESSING: '🔄', READY: '✅', DELIVERED: '🚚' };
+        document.getElementById('status-bar').innerHTML = statuses.map(s => `
       <div class="status-pill s-${s}">
         <div class="s-count">${d.orders_by_status[s] || 0}</div>
         <div class="s-label">${sicons[s]} ${s}</div>
       </div>
     `).join('');
 
-    // Popular garments
-    const max = d.popular_garments[0]?.total_qty || 1;
-    document.getElementById('popular-garments').innerHTML = d.popular_garments.length
-      ? d.popular_garments.map(g => `
+        // Popular garments
+        const max = d.popular_garments[0]?.total_qty || 1;
+        document.getElementById('popular-garments').innerHTML = d.popular_garments.length
+          ? d.popular_garments.map(g => `
         <div class="garment-item">
           <span class="g-name">${g.garment}</span>
-          <div class="g-bar-wrap"><div class="g-bar" style="width:${(g.total_qty/max*100)}%"></div></div>
+          <div class="g-bar-wrap"><div class="g-bar" style="width:${(g.total_qty / max * 100)}%"></div></div>
           <span class="g-count">${g.total_qty}</span>
         </div>
       `).join('')
-      : '<span style="color:var(--muted)">No data yet</span>';
+          : '<span style="color:var(--muted)">No data yet</span>';
 
-    // Recent orders
-    document.getElementById('recent-orders').innerHTML = d.recent_orders.length
-      ? d.recent_orders.map(o => `
+        if (d.revenue_trend) renderChart(d.revenue_trend);
+
+        // Recent orders
+        document.getElementById('recent-orders').innerHTML = d.recent_orders.length
+          ? d.recent_orders.map(o => `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)">
           <div>
             <div style="font-weight:500">${o.customer_name}</div>
@@ -641,37 +1417,38 @@ async function loadDashboard() {
           </div>
         </div>
       `).join('')
-      : '<div class="empty"><div class="e-icon">📭</div><p>No orders yet</p></div>';
+          : '<div class="empty"><div class="e-icon">📭</div><p>No orders yet</p></div>';
 
-  } catch(e) { toast(e.message, 'error'); }
-}
-
-// ── Orders List ──────────────────────────────────────────────────────────────
-async function loadOrders() {
-  const name   = document.getElementById('filter-name')?.value   || '';
-  const phone  = document.getElementById('filter-phone')?.value  || '';
-  const status = document.getElementById('filter-status')?.value || '';
-  const garment= document.getElementById('filter-garment')?.value|| '';
-
-  const params = new URLSearchParams();
-  if (name)    params.set('customer_name', name);
-  if (phone)   params.set('phone', phone);
-  if (status)  params.set('status', status);
-  if (garment) params.set('garment', garment);
-
-  const wrap = document.getElementById('orders-table-wrap');
-  wrap.innerHTML = '<div style="padding:40px;text-align:center"><div class="loader"></div></div>';
-
-  try {
-    const d = await api('/api/orders?' + params);
-    if (!d.orders.length) {
-      wrap.innerHTML = `<div class="empty"><div class="e-icon">🔍</div><p>No orders found</p></div>`;
-      return;
+      } catch (e) { toast(e.message, 'error'); }
     }
-    wrap.innerHTML = `
+
+    // ── Orders List ──────────────────────────────────────────────────────────────
+    async function loadOrders() {
+      const name = document.getElementById('filter-name')?.value || '';
+      const phone = document.getElementById('filter-phone')?.value || '';
+      const status = document.getElementById('filter-status')?.value || '';
+      const garment = document.getElementById('filter-garment')?.value || '';
+
+      const params = new URLSearchParams();
+      if (name) params.set('customer_name', name);
+      if (phone) params.set('phone', phone);
+      if (status) params.set('status', status);
+      if (garment) params.set('garment', garment);
+
+      const wrap = document.getElementById('orders-table-wrap');
+      wrap.innerHTML = '<div style="padding:40px;text-align:center"><div class="loader"></div></div>';
+
+      try {
+        const d = await api('/api/orders?' + params);
+        if (!d.orders.length) {
+          wrap.innerHTML = `<div class="empty"><div class="e-icon">🔍</div><p>No orders found</p></div>`;
+          return;
+        }
+        wrap.innerHTML = `
       <table>
         <thead>
           <tr>
+            <th><input type="checkbox" id="selectAll" onclick="toggleAll(this)"></th>
             <th>Order ID</th><th>Customer</th><th>Phone</th>
             <th>Garments</th><th>Bill</th><th>Status</th>
             <th>Est. Delivery</th><th>Created</th><th>Actions</th>
@@ -680,6 +1457,7 @@ async function loadOrders() {
         <tbody>
           ${d.orders.map(o => `
             <tr>
+              <td><input type="checkbox" class="order-cb" value="${o.id}"></td>
               <td><span class="order-id">${o.id}</span></td>
               <td><strong>${o.customer_name}</strong></td>
               <td>${o.phone}</td>
@@ -699,33 +1477,36 @@ async function loadOrders() {
         </tbody>
       </table>
     `;
-  } catch(e) { toast(e.message, 'error'); wrap.innerHTML = `<div class="empty"><p style="color:var(--red)">${e.message}</p></div>`; }
-}
+      } catch (e) { toast(e.message, 'error'); wrap.innerHTML = `<div class="empty"><p style="color:var(--red)">${e.message}</p></div>`; }
+    }
 
-function clearFilters() {
-  ['filter-name','filter-phone','filter-status','filter-garment'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  loadOrders();
-}
+    function clearFilters() {
+      ['filter-name', 'filter-phone', 'filter-status', 'filter-garment'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      loadOrders();
+    }
 
-// ── View Order Modal ─────────────────────────────────────────────────────────
-async function viewOrder(id) {
-  document.getElementById('modal').classList.add('open');
-  document.getElementById('modal-body').innerHTML = '<div style="text-align:center;padding:40px"><div class="loader"></div></div>';
-  try {
-    const o = await api('/api/orders/' + id);
-    const statusFlow = ['RECEIVED','PROCESSING','READY','DELIVERED'];
-    const curIdx = statusFlow.indexOf(o.status);
+    // ── View Order Modal ─────────────────────────────────────────────────────────
+    async function viewOrder(id) {
+      document.getElementById('modal').classList.add('open');
+      document.getElementById('modal-body').innerHTML = '<div style="text-align:center;padding:40px"><div class="loader"></div></div>';
+      try {
+        const o = await api('/api/orders/' + id);
+        const statusFlow = ['RECEIVED', 'PROCESSING', 'READY', 'DELIVERED'];
+        const curIdx = statusFlow.indexOf(o.status);
 
-    document.getElementById('modal-body').innerHTML = `
+        document.getElementById('modal-body').innerHTML = `
       <div class="modal-header">
         <div>
           <h3>${o.customer_name}</h3>
           <div style="color:var(--muted);font-size:13px;margin-top:3px">${o.id} · ${o.phone}</div>
         </div>
-        <button class="close-btn" onclick="closeModal()">✕</button>
+        <div>
+          <button class="btn btn-ghost btn-sm print-btn" onclick="window.print()" style="margin-right:10px">🖨️ Print</button>
+          <button class="close-btn" onclick="closeModal()">✕</button>
+        </div>
       </div>
 
       <div class="info-row">
@@ -770,166 +1551,447 @@ async function viewOrder(id) {
         `).join('')}
       </div>
     `;
-  } catch(e) { toast(e.message, 'error'); closeModal(); }
-}
+      } catch (e) { toast(e.message, 'error'); closeModal(); }
+    }
 
-async function updateStatus(id, status) {
-  try {
-    await api(`/api/orders/${id}/status`, 'PATCH', { status });
-    toast(`Status updated to ${status}`, 'success');
-    closeModal();
-    if (document.getElementById('page-orders').classList.contains('active')) loadOrders();
-    if (document.getElementById('page-dashboard').classList.contains('active')) loadDashboard();
-  } catch(e) { toast(e.message, 'error'); }
-}
+    async function updateStatus(id, status) {
+      try {
+        await api(`/api/orders/${id}/status`, 'PATCH', { status });
+        toast(`Status updated to ${status}`, 'success');
+        closeModal();
+        if (document.getElementById('page-orders').classList.contains('active')) loadOrders();
+        if (document.getElementById('page-dashboard').classList.contains('active')) loadDashboard();
+      } catch (e) { toast(e.message, 'error'); }
+    }
 
-async function deleteOrder(id) {
-  if (!confirm(`Delete order ${id}? This cannot be undone.`)) return;
-  try {
-    await api(`/api/orders/${id}`, 'DELETE');
-    toast('Order deleted', 'success');
-    loadOrders();
-    loadDashboard();
-  } catch(e) { toast(e.message, 'error'); }
-}
+    async function deleteOrder(id) {
+      if (!confirm(`Delete order ${id}? This cannot be undone.`)) return;
+      try {
+        await api(`/api/orders/${id}`, 'DELETE');
+        toast('Order deleted', 'success');
+        loadOrders();
+        loadDashboard();
+      } catch (e) { toast(e.message, 'error'); }
+    }
 
-function closeModal(e) {
-  if (!e || e.target === document.getElementById('modal')) {
-    document.getElementById('modal').classList.remove('open');
-  }
-}
+    function closeModal(e) {
+      if (!e || e.target === document.getElementById('modal')) {
+        document.getElementById('modal').classList.remove('open');
+      }
+    }
 
-// ── Create Order ─────────────────────────────────────────────────────────────
-let prices = {};
-let garmentCount = 0;
+    // ── Create Order ─────────────────────────────────────────────────────────────
+    let prices = {};
+    let garmentCount = 0;
 
-async function initCreatePage() {
-  if (!Object.keys(prices).length) {
-    const d = await api('/api/prices');
-    prices = d.prices;
-  }
-  if (garmentCount === 0) {
-    resetForm();
-    addGarmentRow();
-  }
-}
+    async function initCreatePage() {
+      if (!Object.keys(prices).length) {
+        const d = await api('/api/prices');
+        prices = d.prices;
+      }
+      if (garmentCount === 0) {
+        resetForm();
+        addGarmentRow();
+      }
+    }
 
-function addGarmentRow() {
-  garmentCount++;
-  const id = `gr-${garmentCount}`;
-  const row = document.createElement('div');
-  row.className = 'garment-row'; row.id = id;
-  row.innerHTML = `
+    function addGarmentRow() {
+      garmentCount++;
+      const id = `gr-${garmentCount}`;
+      const row = document.createElement('div');
+      row.className = 'garment-row'; row.id = id;
+      row.innerHTML = `
     <select onchange="garmentChanged(this, '${id}')">
       <option value="">-- Select Garment --</option>
       ${Object.keys(prices).map(g => `<option value="${g}">${g}</option>`).join('')}
-      <option value="Other">Other</option>
     </select>
     <input type="number" min="1" value="1" placeholder="Qty" oninput="updateBill()">
     <input type="number" min="0" step="0.5" placeholder="Price (₹)" oninput="updateBill()">
     <button class="remove-btn" onclick="removeGarmentRow('${id}')">✕</button>
   `;
-  document.getElementById('garment-rows').appendChild(row);
-}
-
-function garmentChanged(sel, id) {
-  const row = document.getElementById(id);
-  const priceInput = row.querySelectorAll('input')[1];
-  if (sel.value && prices[sel.value]) {
-    priceInput.value = prices[sel.value];
-  }
-  updateBill();
-}
-
-function removeGarmentRow(id) {
-  const el = document.getElementById(id);
-  if (document.querySelectorAll('.garment-row').length > 1) { el.remove(); updateBill(); }
-  else toast('At least one garment required', 'error');
-}
-
-function updateBill() {
-  const rows = document.querySelectorAll('.garment-row');
-  let total = 0, lines = [];
-  rows.forEach(r => {
-    const sel = r.querySelector('select');
-    const qty = parseFloat(r.querySelectorAll('input')[0].value) || 0;
-    const price = parseFloat(r.querySelectorAll('input')[1].value) || 0;
-    if (sel.value && qty > 0 && price > 0) {
-      const sub = qty * price;
-      total += sub;
-      lines.push(`<div class="bill-row"><span>${sel.value} × ${qty}</span><span>${fmt(price)} each</span><span>${fmt(sub)}</span></div>`);
+      document.getElementById('garment-rows').appendChild(row);
     }
-  });
-  const preview = document.getElementById('bill-preview');
-  if (lines.length) {
-    preview.style.display = 'block';
-    document.getElementById('bill-lines').innerHTML = lines.join('');
-    document.getElementById('bill-total-val').textContent = fmt(total);
-  } else { preview.style.display = 'none'; }
-}
 
-async function submitOrder() {
-  const name  = document.getElementById('c-name').value.trim();
-  const phone = document.getElementById('c-phone').value.trim();
-  const notes = document.getElementById('c-notes').value.trim();
+    function garmentChanged(sel, id) {
+      const row = document.getElementById(id);
+      const priceInput = row.querySelectorAll('input')[1];
+      if (sel.value && prices[sel.value]) {
+        priceInput.value = prices[sel.value];
+      }
+      updateBill();
+    }
 
-  if (!name) { toast('Customer name is required', 'error'); return; }
-  if (!phone) { toast('Phone number is required', 'error'); return; }
+    function removeGarmentRow(id) {
+      const el = document.getElementById(id);
+      if (document.querySelectorAll('.garment-row').length > 1) { el.remove(); updateBill(); }
+      else toast('At least one garment required', 'error');
+    }
 
-  const garments = [];
-  document.querySelectorAll('.garment-row').forEach(r => {
-    const g = r.querySelector('select').value;
-    const qty = parseInt(r.querySelectorAll('input')[0].value);
-    const price = parseFloat(r.querySelectorAll('input')[1].value);
-    if (g && qty > 0) garments.push({ garment: g, quantity: qty, price_per_item: price || null });
-  });
-  if (!garments.length) { toast('Add at least one garment', 'error'); return; }
+    function updateBill() {
+      const rows = document.querySelectorAll('.garment-row');
+      let total = 0, lines = [];
+      rows.forEach(r => {
+        const sel = r.querySelector('select');
+        const qty = parseFloat(r.querySelectorAll('input')[0].value) || 0;
+        const price = parseFloat(r.querySelectorAll('input')[1].value) || 0;
+        if (sel.value && qty > 0 && price > 0) {
+          const sub = qty * price;
+          total += sub;
+          lines.push(`<div class="bill-row"><span>${sel.value} × ${qty}</span><span>${fmt(price)} each</span><span>${fmt(sub)}</span></div>`);
+        }
+      });
+      const preview = document.getElementById('bill-preview');
+      if (lines.length) {
+        preview.style.display = 'block';
+        document.getElementById('bill-lines').innerHTML = lines.join('');
+        document.getElementById('bill-total-val').textContent = fmt(total);
+      } else { preview.style.display = 'none'; }
+    }
 
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = true; btn.textContent = 'Creating...';
+    async function submitOrder() {
+      const name = document.getElementById('c-name').value.trim();
+      const phone = document.getElementById('c-phone').value.trim();
+      const notes = document.getElementById('c-notes').value.trim();
 
-  try {
-    const res = await api('/api/orders', 'POST', { customer_name: name, phone, garments, notes: notes || null });
-    toast(`✅ ${res.order_id} created! Bill: ${fmt(res.total_bill)}`, 'success');
-    resetForm();
-    addGarmentRow();
+      if (!name) { toast('Customer name is required', 'error'); return; }
+      if (!phone) { toast('Phone number is required', 'error'); return; }
+
+      const garments = [];
+      document.querySelectorAll('.garment-row').forEach(r => {
+        const g = r.querySelector('select').value;
+        const qty = parseInt(r.querySelector('input').value);
+        const price = parseFloat(r.querySelectorAll('input')[1].value);
+        if (g && qty > 0) garments.push({ garment: g, quantity: qty, price_per_item: price || null });
+      });
+      if (!garments.length) { toast('Add at least one garment', 'error'); return; }
+
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true; btn.textContent = 'Creating...';
+
+      try {
+        const res = await api('/api/orders', 'POST', { customer_name: name, phone, garments, notes: notes || null });
+        toast(`✅ ${res.order_id} created! Bill: ${fmt(res.total_bill)}`, 'success');
+        resetForm();
+        addGarmentRow();
+        loadDashboard();
+      } catch (e) { toast(e.message, 'error'); }
+      finally { btn.disabled = false; btn.textContent = '✓ Create Order'; }
+    }
+
+    function resetForm() {
+      document.getElementById('c-name').value = '';
+      document.getElementById('c-phone').value = '';
+      document.getElementById('c-notes').value = '';
+      document.getElementById('garment-rows').innerHTML = '';
+      document.getElementById('bill-preview').style.display = 'none';
+      garmentCount = 0;
+    }
+
+    // ── Prices & POS ─────────────────────────────────────────────────────────────
+    const GARMENT_IMAGES = {
+      "Shirt": "/static/garments/garment_shirt.png",
+      "T-Shirt": "/static/garments/garment_tshirt.png",
+      "Pants": "/static/garments/garment_pants.png",
+      "Jeans": "/static/garments/garment_jeans.png",
+      "Saree": "/static/garments/garment_saree.png",
+      "Suit": "/static/garments/garment_suit.png",
+      "Jacket": "/static/garments/garment_jacket.png",
+      "Kurta": "/static/garments/garment_kurta.png",
+      "Dress": "/static/garments/garment_dress.png",
+      "Blanket": "/static/garments/garment_blanket.png",
+      "Bedsheet": "/static/garments/garment_bedsheet.png",
+      "Curtain": "/static/garments/garment_curtain.png",
+      "Sweater": "/static/garments/garment_sweater.png",
+      "Blazer": "/static/garments/garment_blazer.png",
+      "Lehenga": "/static/garments/garment_lehenga.png",
+      "Dupatta": "/static/garments/garment_dupatta.png",
+      "Salwar Kameez": "/static/garments/garment_salwar.png",
+      "Coat": "/static/garments/garment_blazer.png", // fallback
+      "Tie": "/static/garments/garment_suit.png", // fallback
+      "Skirt": "/static/garments/garment_lehenga.png",
+      "Shorts": "/static/garments/garment_pants.png",
+      "Scarf": "/static/garments/garment_dupatta.png",
+      "Bath Towel": "/static/garments/garment_blanket.png",
+      "Pillow Cover": "/static/garments/garment_bedsheet.png",
+      "Trackpants": "/static/garments/garment_pants.png",
+      "Undergarment": "/static/garments/garment_shirt.png",
+      "Socks": "/static/garments/garment_shirt.png",
+      "Hand Towel": "/static/garments/garment_blanket.png",
+      "Cap": "/static/garments/garment_shirt.png",
+      "Hoodie": "/static/garments/garment_jacket.png",
+      "Cardigan": "/static/garments/garment_sweater.png",
+      "Shawl": "/static/garments/garment_dupatta.png",
+      "Gloves": "/static/garments/garment_shirt.png",
+      "Table Cloth": "/static/garments/garment_bedsheet.png",
+      "Nightgown": "/static/garments/garment_dress.png",
+      "Pajamas": "/static/garments/garment_pants.png",
+      "Uniform": "/static/garments/garment_suit.png",
+      "Apron": "/static/garments/garment_shirt.png",
+      "Vest": "/static/garments/garment_shirt.png"
+    };
+
+    let posCart = {};
+
+    async function loadPrices() {
+      const d = await api('/api/prices');
+      prices = d.prices;
+
+      const gridHtml = `
+        <style>
+          .price-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+          }
+          .price-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+          }
+          .price-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+          }
+          .price-img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-bottom: 1px solid var(--border);
+            transition: transform 0.4s ease;
+          }
+          .price-card:hover .price-img {
+            transform: scale(1.05);
+          }
+          .price-info {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(0,0,0,0.2);
+            z-index: 1;
+            flex: 1;
+          }
+          .price-name {
+            font-family: var(--font-head);
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: var(--text);
+          }
+          .price-val {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--green);
+            margin-bottom: 12px;
+          }
+          .btn-add {
+            width: 100%;
+            padding: 8px;
+            border-radius: 12px;
+            border: 1px solid rgba(99,102,241,0.3);
+            background: rgba(99,102,241,0.1);
+            color: var(--accent);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: auto;
+          }
+          .btn-add:hover {
+            background: var(--accent);
+            color: #fff;
+          }
+        </style>
+        <div class="price-grid">
+          ${Object.entries(d.prices).map(([g, p]) => `
+            <div class="price-card">
+              <img src="${GARMENT_IMAGES[g] || GARMENT_IMAGES['Other']}?random=${Math.random()}" class="price-img" loading="lazy" alt="${g}">
+              <div class="price-info">
+                <div class="price-name">${g}</div>
+                <div class="price-val">${fmt(p)}</div>
+                <button class="btn-add" onclick="posAddToCart('${g}')">+ Add to Bill</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      document.getElementById('price-list').innerHTML = gridHtml;
+      renderPosCart();
+    }
+
+    function posAddToCart(garment) {
+      if (!posCart[garment]) posCart[garment] = 0;
+      posCart[garment]++;
+      renderPosCart();
+      toast(`Added ${garment} to bill`, 'info');
+    }
+
+    function posUpdateQty(garment, change) {
+      if (posCart[garment]) {
+        posCart[garment] += change;
+        if (posCart[garment] <= 0) delete posCart[garment];
+        renderPosCart();
+      }
+    }
+
+    function renderPosCart() {
+      const itemsContainer = document.getElementById('pos-cart-items');
+      let total = 0;
+      let html = '';
+
+      const keys = Object.keys(posCart);
+      if (keys.length === 0) {
+        itemsContainer.innerHTML = '<div class="empty"><p style="color:var(--muted)">No items added yet</p></div>';
+        document.getElementById('pos-total-val').textContent = fmt(0);
+        return;
+      }
+
+      keys.forEach(g => {
+        const qty = posCart[g];
+        const price = prices[g];
+        const sub = qty * price;
+        total += sub;
+
+        html += `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border);">
+            <div>
+              <div style="font-weight:600; font-size:14px;">${g}</div>
+              <div style="color:var(--muted); font-size:12px;">${fmt(price)} each</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div style="display:flex; align-items:center; background:var(--bg); border-radius:6px; overflow:hidden; border:1px solid var(--border);">
+                <button style="border:none; background:transparent; color:var(--text); padding:4px 8px; cursor:pointer;" onclick="posUpdateQty('${g}', -1)">-</button>
+                <span style="font-size:13px; font-weight:600; width:20px; text-align:center;">${qty}</span>
+                <button style="border:none; background:transparent; color:var(--text); padding:4px 8px; cursor:pointer;" onclick="posUpdateQty('${g}', 1)">+</button>
+              </div>
+              <div style="font-weight:700; color:var(--green); width:50px; text-align:right;">${fmt(sub)}</div>
+            </div>
+          </div>
+        `;
+      });
+
+      itemsContainer.innerHTML = html;
+      document.getElementById('pos-total-val').textContent = fmt(total);
+    }
+
+    function checkoutPos() {
+      if (Object.keys(posCart).length === 0) {
+        toast('Add some items to the bill first!', 'error');
+        return;
+      }
+      showPage('create');
+
+      document.getElementById('garment-rows').innerHTML = '';
+      garmentCount = 0;
+
+      Object.keys(posCart).forEach(g => {
+        const qty = posCart[g];
+        garmentCount++;
+        const id = `gr-${garmentCount}`;
+        const row = document.createElement('div');
+        row.className = 'garment-row'; row.id = id;
+        row.innerHTML = `
+          <select onchange="garmentChanged(this, '${id}')">
+            <option value="">-- Select Garment --</option>
+            ${Object.keys(prices).map(p => `<option value="${p}" ${p === g ? 'selected' : ''}>${p}</option>`).join('')}
+          </select>
+          <input type="number" min="1" value="${qty}" placeholder="Qty" oninput="updateBill()">
+          <input type="number" min="0" step="0.5" value="${prices[g]}" placeholder="Price (₹)" oninput="updateBill()">
+          <button class="remove-btn" onclick="removeGarmentRow('${id}')">✕</button>
+        `;
+        document.getElementById('garment-rows').appendChild(row);
+      });
+
+      updateBill();
+      toast('Cart items transferred! Fill customer details to finalize.', 'success');
+      posCart = {};
+      renderPosCart();
+    }
+
+    // ── Global refresh ───────────────────────────────────────────────────────────
+    function refreshAll() {
+      const active = document.querySelector('.page.active')?.id?.replace('page-', '');
+      if (active === 'dashboard') loadDashboard();
+      if (active === 'orders') loadOrders();
+      toast('Refreshed', 'info');
+    }
+
+    // ── Init ─────────────────────────────────────────────────────────────────────
+    let chartInstance = null;
+    function renderChart(trendData) {
+      const ctx = document.getElementById('revenueChart');
+      if (!ctx) return;
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: trendData.map(d => d.date),
+          datasets: [{
+            label: 'Revenue',
+            data: trendData.map(d => d.revenue),
+            borderColor: '#4f8ef7',
+            backgroundColor: 'rgba(79,142,247,0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { grid: { color: '#262c3e' }, ticks: { color: '#6b7280' } },
+            x: { grid: { color: '#262c3e' }, ticks: { color: '#6b7280' } }
+          }
+        }
+      });
+    }
+
+    function toggleAll(chk) {
+      document.querySelectorAll('.order-cb').forEach(c => c.checked = chk.checked);
+    }
+
+    async function applyBulkUpdate() {
+      const status = document.getElementById('bulk-status').value;
+      if (!status) return toast('Select a status', 'error');
+      const ids = Array.from(document.querySelectorAll('.order-cb:checked')).map(c => c.value);
+      if (!ids.length) return toast('Select at least one order', 'error');
+
+      try {
+        await api('/api/orders/bulk-status', 'PATCH', { order_ids: ids, status });
+        toast(`Updated ${ids.length} orders to ${status}`, 'success');
+        loadOrders();
+        loadDashboard();
+      } catch (e) { toast(e.message, 'error'); }
+    }
+
+    function exportCSV() {
+      const rows = [["Order ID", "Customer", "Phone", "Status", "Bill", "Created At"]];
+      document.querySelectorAll('#orders-table-wrap tbody tr').forEach(tr => {
+        const tds = tr.querySelectorAll('td');
+        if (tds.length > 2) {
+          rows.push([
+            tds[1].innerText, tds[2].innerText, tds[3].innerText,
+            tds[6].innerText, tds[5].innerText.replace('₹', '').replace(/,/g, ''), tds[8].innerText
+          ].map(v => `"${v}"`).join(','));
+        }
+      });
+      const csv = rows.join('\\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'orders.csv';
+      a.click();
+    }
+
     loadDashboard();
-  } catch(e) { toast(e.message, 'error'); }
-  finally { btn.disabled = false; btn.textContent = '✓ Create Order'; }
-}
-
-function resetForm() {
-  document.getElementById('c-name').value = '';
-  document.getElementById('c-phone').value = '';
-  document.getElementById('c-notes').value = '';
-  document.getElementById('garment-rows').innerHTML = '';
-  document.getElementById('bill-preview').style.display = 'none';
-  garmentCount = 0;
-}
-
-// ── Prices ───────────────────────────────────────────────────────────────────
-async function loadPrices() {
-  const d = await api('/api/prices');
-  prices = d.prices;
-  document.getElementById('price-list').innerHTML = Object.entries(d.prices)
-    .map(([g, p]) => `
-      <div class="bill-row">
-        <span>${g}</span>
-        <span style="color:var(--green);font-weight:600">${fmt(p)}</span>
-      </div>
-    `).join('');
-}
-
-// ── Global refresh ───────────────────────────────────────────────────────────
-function refreshAll() {
-  const active = document.querySelector('.page.active')?.id?.replace('page-', '');
-  if (active === 'dashboard') loadDashboard();
-  if (active === 'orders') loadOrders();
-  toast('Refreshed', 'info');
-}
-
-// ── Init ─────────────────────────────────────────────────────────────────────
-loadDashboard();
-</script>
+  </script>
 </body>
+
 </html>
